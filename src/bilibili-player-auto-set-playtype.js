@@ -2,8 +2,8 @@
 // @name         自动设置B站的自动连播（自动切集）
 // @namespace    https://github.com/SineObama/bilibili-player-auto-set-playtype
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.1
-// @description  默认的配置内容是我个人喜好（脚本运行后可在存储中修改）：进入自己的收藏等列表、番剧页面时，改为自动连播；普通视频页面/稍后再看，不自动连播；其余情况默认也不自动连播。
+// @version      0.1.1
+// @description  B站的多数页面中，自动切集功能在播放器里，修改起来很麻烦，所以按照我的习惯做了在不同页面自动切换的功能（脚本运行后可在存储中修改配置），具体包括：1.【自己的收藏等列表页面】自动连播；2.【普通视频/稍后再看/番剧】不自动连播；3.其余情况默认也不自动连播。【吐槽】视频或番剧看完可能会想看评论区，或者点赞等，所以不想自动连播，尤其是番剧最新一集播完可能连播到奇怪的视频。
 // @author       SineObama
 // @match        https://www.bilibili.com/*
 // @grant        GM_setValue
@@ -21,11 +21,11 @@ var reset = loadStorage('__ALWAYS_RESET_CONFIG__', false);
 // 配置需要开启功能的页面
 var urlsToOpen = loadStorage('urlsToOpen', [
     'bilibili.com/list',
-    'bilibili.com/bangumi',
 ], reset);
 // 配置需要关闭功能的页面
 var urlsToClose = loadStorage('urlsToClose', [
     'bilibili.com/video',
+    'bilibili.com/bangumi',
     'bilibili.com/list/watchlater',
 ], reset);
 // 配置默认行为（没有匹配以上规则时）：true/false 设置为开启/关闭； null 不修改
