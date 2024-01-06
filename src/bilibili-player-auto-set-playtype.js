@@ -2,7 +2,7 @@
 // @name         自动设置B站的自动连播（自动切集）
 // @namespace    https://github.com/SineObama/bilibili-player-auto-set-playtype
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.1.2
+// @version      0.1.3
 // @description  B站的多数页面中，自动切集功能在播放器里，修改起来很麻烦，所以按照我的习惯做了在不同页面自动切换的功能（脚本运行后可在存储中修改配置），具体包括：1.【自己的收藏等列表页面】自动连播；2.【普通视频/稍后再看/番剧】不自动连播；3.其余情况默认也不自动连播。【吐槽】视频或番剧看完可能会想看评论区，或者点赞等，所以不想自动连播，尤其是番剧最新一集播完可能连播到奇怪的视频。
 // @author       SineObama
 // @match        https://www.bilibili.com/*
@@ -142,16 +142,19 @@ function doBlockJump() {
             return;
         }
 
+        // 有些情况如切换番剧系列时没有A标签，暂时改为全部点击都可触发
+        var release = true;
+
         // 如果点击的元素在A标签中则视为人为点击跳转链接，允许跳转
-        var release = false;
-        var el = e.target;
-        while (el) {
-            if (el.tagName === 'A') {
-                release = true;
-                break;
-            }
-            el = el.parentNode;
-        }
+        // var release = false;
+        // var el = e.target;
+        // while (el) {
+        //     if (el.tagName === 'A') {
+        //         release = true;
+        //         break;
+        //     }
+        //     el = el.parentNode;
+        // }
 
         if (release) {
             // 通过暂时关闭阻止功能来允许页面跳转
