@@ -2,7 +2,7 @@
 // @name         自动设置B站的自动连播（自动切集）
 // @namespace    https://github.com/SineObama/bilibili-player-auto-set-playtype
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.1.3
+// @version      0.1.4
 // @description  B站的多数页面中，自动切集功能在播放器里，修改起来很麻烦，所以按照我的习惯做了在不同页面自动切换的功能（脚本运行后可在存储中修改配置），具体包括：1.【自己的收藏等列表页面】自动连播；2.【普通视频/稍后再看/番剧】不自动连播；3.其余情况默认也不自动连播。【吐槽】视频或番剧看完可能会想看评论区，或者点赞等，所以不想自动连播，尤其是番剧最新一集播完可能连播到奇怪的视频。
 // @author       SineObama
 // @match        https://www.bilibili.com/*
@@ -129,7 +129,7 @@ function doBlockJump() {
 
     Object.defineProperty(window.History.prototype, 'pushState', {
         get: function () {
-            // 启用阻止时，通过异常阻止页面跳转！偶然发现的方法，单纯throw不行，不清楚原理
+            // 启用阻止时，通过异常阻止B站页面跳转！这是偶然发现的方法，单纯throw不行，不清楚原理
             return myBlockJump ? pushStateAssign.get.call(this) : pushStateAssign;
         }
     });
@@ -137,88 +137,21 @@ function doBlockJump() {
     // 如果是正常的人为点击操作，则允许页面跳转
     window.addEventListener('click', releaseJump, true);
 
+    var reBlockNum;
+
     function releaseJump(e) {
         if (!myBlockJump) {
             return;
         }
 
-        // 有些情况如切换番剧系列时没有A标签，暂时改为全部点击都可触发
-        var release = true;
-
-        // 如果点击的元素在A标签中则视为人为点击跳转链接，允许跳转
-        // var release = false;
-        // var el = e.target;
-        // while (el) {
-        //     if (el.tagName === 'A') {
-        //         release = true;
-        //         break;
-        //     }
-        //     el = el.parentNode;
-        // }
-
-        if (release) {
-            // 通过暂时关闭阻止功能来允许页面跳转
-            myBlockJump = false;
-            setTimeout(function () {
-                myBlockJump = true;
-            }, 500);
-        }
+        // 不管点击的是什么，实际可能有很多情况，
+        // 通过暂时关闭阻止功能来允许页面跳转
+        myBlockJump = false;
+        clearTimeout(reBlockNum);
+        reBlockNum = setTimeout(function () {
+            myBlockJump = true;
+        }, 500);
     }
 
-    // 以下研究其他跳转方式的阻止方法，但B站没用或者对B站没用
-    // // 阻止页面的 location.href 和 location.replace 方法的调用
-    // var originalHref = Object.getOwnPropertyDescriptor(window.Location.prototype, 'href');
-    // var originalReplace = Object.getOwnPropertyDescriptor(window.Location.prototype, 'replace');
-    //
-    // Object.defineProperty(window.Location.prototype, 'href', {
-    //     set: function (value) {
-    //         // 阻止设置新的 URL
-    //         console.log('Blocked href:', value);
-    //     },
-    //     get: function () {
-    //         return originalHref.get.call(this);
-    //     }
-    // });
-    //
-    // Object.defineProperty(window.Location.prototype, 'replace', {
-    //     set: function (value) {
-    //         // 阻止替换当前 URL
-    //         console.log('Blocked replace:', value);
-    //     },
-    //     get: function () {
-    //         return originalReplace.get.call(this);
-    //     }
-    // });
-    //
-    //
-    // // 阻止 window.open 方法的调用
-    // var originalOpen = window.open;
-    //
-    // window.open = function (url, target, features) {
-    //     // 阻止打开新窗口或标签页
-    //     console.log('Blocked window.open:', url, target, features);
-    // };
-    //
-    //
-    // // 阻止 location.assign 方法的调用
-    // var originalAssign = window.Location.prototype.assign;
-    //
-    // Object.defineProperty(window.Location.prototype, 'assign', {
-    //     set: function (value) {
-    //         // 阻止设置新的 URL
-    //         console.log('Blocked assign:', value);
-    //     },
-    //     get: function () {
-    //         return originalAssign.get.call(this);
-    //     }
-    // });
-    //
-    //
-    // // 阻止 History.pushState 方法的调用
-    // var originalPushState = history.pushState;
-    //
-    // history.pushState = function (state, title, url) {
-    //     // 阻止改变浏览器的 URL 和历史记录
-    //     console.log('Blocked pushState:', state, title, url);
-    // };
+    // 其他不可能实现的方法（常识）：location location.href 和 location.replace 都是不可以被修改的
 }
