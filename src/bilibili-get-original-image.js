@@ -2,8 +2,8 @@
 // @name         优化B站图片操作，点击时查看/复制/打开原始图片
 // @namespace    https://github.com/SineObama
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.1.0.20240504
-// @description  鼠标点击时加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
+// @version      0.1.1.20240527
+// @description  鼠标点击时暴力加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
 // @author       SineObama
 // @match        *://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
@@ -60,14 +60,16 @@ function replaceImgSrc(el, imageUrl, imageUrlNew) {
     var parentNode = el.parentNode;
 
     if (parentNode && parentNode.nodeName === 'PICTURE') {
+        // 对于多个 source 元素，不确定他会用哪个，所以都暴力改掉
+        var flag = false;
         for (var i = 0; i < parentNode.children.length; i++) {
             var child = parentNode.children[i];
-            if (child && child.tagName === 'SOURCE' && imageUrl.endsWith(child.srcset)) {
+            if (child && child.tagName === 'SOURCE' && imageUrl.contains(child.srcset.replace(imgSuffixReg, ''))) {
                 child.srcset = imageUrlNew;
-                return true;
+                flag = true;
             }
         }
-        return false;
+        return flag;
     } else {
         // 一般图片直接替换
         el.src = imageUrlNew;
