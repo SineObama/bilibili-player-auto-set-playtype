@@ -2,7 +2,7 @@
 // @name         优化B站图片操作，点击时查看/复制/打开原始图片
 // @namespace    https://github.com/SineObama
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.1.1.20240527
+// @version      0.2.0.20241201
 // @description  鼠标点击时暴力加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
 // @author       SineObama
 // @match        *://*.bilibili.com/*
@@ -12,7 +12,10 @@
 // ==/UserScript==
 
 // 匹配图片后缀并去除，常见格式".jpg@!web-comment-note.avif"
-var imgSuffixReg = /(?<=\.[a-z]+)@.*\.[a-z]+$/;
+// 但还发现首页视频封面: https://i1.hdslb.com/bfs/archive/f1a23a1724f7450dfbcc5e4d69cfb2c127c8a90e.jpg@672w_378h_1c_!web-home-common-cover
+// 图片封面: https://i1.hdslb.com/bfs/banner/a6ade099505ec03f3ac616510bbf08d0972b88ec.png@800w_512h_!web-home-carousel-cover.avif?mirror_report_swipe=1
+// 格式有点多，放弃逐个匹配了，直接去掉全部吧
+var imgSuffixReg = /(?<=\.[a-z]+)@.*?$/;
 
 // 右键上下文菜单时触发，以便下一步进行复制之前完成修改
 document.addEventListener('contextmenu', removeImgSuffix);
@@ -29,17 +32,37 @@ function removeImgSuffix(event) {
 
     var el = event.target;
 
+    console.debug('点击的元素:', el.tagName, el);
+
     if (el.tagName === 'IMG') {
-        var imageUrl = el.src;
+        doRemoveImgSuffix(el);
+        return;
+    }
 
-        console.debug('点击的图片元素地址:', imageUrl);
+    // 视频封面  a > div.b-img > picture.b-img__inner > img 已知适用于：
+    // https://space.bilibili.com/30987652/video
+    // https://t.bilibili.com/
+    // https://www.bilibili.com/video/BV1ZBzhYREVs
+    var bImg = el.parentNode.getElementsByClassName('b-img')[0];
+    if (bImg) {
+        var img = bImg.getElementsByTagName('img')[0];
+        if (img) {
+            doRemoveImgSuffix(img);
+        }
+    }
+}
 
-        if (imgSuffixReg.test(imageUrl)) {
-            var imageUrlNew = imageUrl.replace(imgSuffixReg, '');
+function doRemoveImgSuffix(el) {
+    // 优先选取 picture 元素下当前使用的 source 元素的图片地址
+    var imageUrl = el.currentSrc || el.src;
 
-            if (replaceImgSrc(el, imageUrl, imageUrlNew)) {
-                console.debug('已去除图片地址后缀:', imageUrlNew);
-            }
+    console.debug('点击的图片元素地址:', imageUrl);
+
+    if (imgSuffixReg.test(imageUrl)) {
+        var imageUrlNew = imageUrl.replace(imgSuffixReg, '');
+
+        if (replaceImgSrc(el, imageUrl, imageUrlNew)) {
+            console.debug('已去除图片地址后缀:', imageUrlNew);
         }
     }
 }
@@ -64,7 +87,7 @@ function replaceImgSrc(el, imageUrl, imageUrlNew) {
         var flag = false;
         for (var i = 0; i < parentNode.children.length; i++) {
             var child = parentNode.children[i];
-            if (child && child.tagName === 'SOURCE' && imageUrl.contains(child.srcset.replace(imgSuffixReg, ''))) {
+            if (child && child.tagName === 'SOURCE' && imageUrl.indexOf(imageUrlNew > -1)) {
                 child.srcset = imageUrlNew;
                 flag = true;
             }
