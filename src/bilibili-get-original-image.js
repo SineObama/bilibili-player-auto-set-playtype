@@ -2,7 +2,7 @@
 // @name         优化B站图片操作，点击时查看/复制/打开原始图片
 // @namespace    https://github.com/SineObama
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.2.0.20241201
+// @version      0.2.1.20241201
 // @description  鼠标点击时暴力加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
 // @author       SineObama
 // @match        *://*.bilibili.com/*
@@ -43,9 +43,9 @@ function removeImgSuffix(event) {
     // https://space.bilibili.com/30987652/video
     // https://t.bilibili.com/
     // https://www.bilibili.com/video/BV1ZBzhYREVs
-    var bImg = el.parentNode.getElementsByClassName('b-img')[0];
-    if (bImg) {
-        var img = bImg.getElementsByTagName('img')[0];
+    var bImgs = el.parentNode.getElementsByClassName('b-img');
+    if (bImgs.length === 1) {
+        var img = bImgs[0].getElementsByTagName('img')[0];
         if (img) {
             doRemoveImgSuffix(img);
         }
