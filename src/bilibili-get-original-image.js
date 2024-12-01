@@ -2,8 +2,8 @@
 // @name         优化B站图片操作，点击时查看/复制/打开原始图片
 // @namespace    https://github.com/SineObama
 // @homepage     https://github.com/SineObama/bilibili-player-auto-set-playtype
-// @version      0.2.1.20241201
-// @description  鼠标点击时暴力加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
+// @version      0.2.2.20241201
+// @description  鼠标点击时暴力加载原图✔，可直接对缩略图进行操作✔，拖拽、右键复制✔，粘贴到TIM等软件✔。 ※实现方式※ 去除地址后缀例如"@!web-comment-note.avif"。 ※涵盖范围※ 动态图片/专栏图片等；视频封面/用户头像。 ※浏览器兼容※ 360极速浏览器✔，已知火狐浏览器部分右键和拖拽功能不够兼容。 ※吐槽※ 为什么TIM不支持直接粘贴，不支持原本的avif格式？？
 // @author       SineObama
 // @match        *://*.bilibili.com/*
 // @icon         https://www.bilibili.com/favicon.ico
@@ -48,7 +48,32 @@ function removeImgSuffix(event) {
         var img = bImgs[0].getElementsByTagName('img')[0];
         if (img) {
             doRemoveImgSuffix(img);
+            return;
         }
+    }
+
+    // 尝试若干方法找到唯一的图片元素
+    var imgs;
+
+    // 尝试从父节点乱找
+    imgs = el.parentNode.getElementsByTagName('img');
+    if (imgs.length === 1) {
+        doRemoveImgSuffix(imgs[0]);
+        return;
+    }
+
+    // 评论区用户popup卡片中的头像 bili-user-profile 内部是 DocumentFragment 发现存在 renderRoot 属性可以找到它
+    // 最后是内部元素 #avatar > img
+    var rRoot = el.renderRoot;
+    if (rRoot) {
+        el = rRoot.getElementById('avatar');
+    }
+
+    // 直接找唯一图片
+    imgs = el.getElementsByTagName('img');
+    if (imgs.length === 1) {
+        doRemoveImgSuffix(imgs[0]);
+        return;
     }
 }
 
